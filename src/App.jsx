@@ -191,8 +191,8 @@ function EnvelopeHero({ reduced }) {
   const hintFade = clamp(1 - p / 0.1, 0, 1);
 
   return (
-    <section ref={trackRef} style={{ height: "300vh", position: "relative" }} aria-label="Invitation reveal">
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center"
+    <section ref={trackRef} style={{ height: "300dvh", position: "relative" }} aria-label="Invitation reveal">
+      <div className="sticky top-0 h-dvh w-full overflow-hidden flex items-center justify-center"
         style={{ ...floralBg, backgroundColor: C.ivory }}>
 
         {/* soft vignette */}
@@ -360,15 +360,20 @@ function EnvelopeHero({ reduced }) {
           </div>
         </div>
 
-        {/* scroll hint */}
-        <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2"
-          style={{ opacity: hintFade, transition: "opacity 0.3s ease" }}>
+        {/* scroll hint — anchored above any mobile home-indicator / browser-chrome safe area */}
+        <div className="absolute left-0 right-0 flex flex-col items-center gap-2"
+          style={{
+            bottom: "max(1.75rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem))",
+            opacity: hintFade,
+            transition: "opacity 0.3s ease",
+            animation: reduced ? "none" : "scrollHintBounce 1.8s ease-in-out infinite",
+          }}>
           <p style={{
             fontFamily: "'Cormorant Garamond', serif",
             letterSpacing: "0.32em", textTransform: "uppercase",
-            fontSize: 12, color: C.burgundy,
+            fontSize: 13, fontWeight: 600, color: C.burgundy,
           }}>Scroll to open</p>
-          <svg width="18" height="26" viewBox="0 0 18 26" aria-hidden="true">
+          <svg width="20" height="28" viewBox="0 0 18 26" aria-hidden="true">
             <rect x="1" y="1" width="16" height="24" rx="8" fill="none" stroke={C.burgundy} strokeWidth="1.4" />
             <circle cx="9" cy="8" r="2" fill={C.burgundy}>
               {!reduced && (
@@ -638,7 +643,9 @@ function MemoryBox() {
   const [author, setAuthor] = useState("");
   const [photo, setPhoto] = useState(null);
   const [entries, setEntries] = useState([]);
+  const [error, setError] = useState("");
   const fileRef = useRef(null);
+  const [state, handleSubmit, resetForm] = useForm("xzdnnbnd");
 
   const onFile = (e) => {
     const f = e.target.files?.[0];
@@ -648,12 +655,28 @@ function MemoryBox() {
     reader.readAsDataURL(f);
   };
 
-  const post = () => {
-    if (!message.trim() && !photo) return;
-    setEntries([{ id: Date.now(), author: author.trim() || "A friend", message: message.trim(), photo }, ...entries]);
-    setMessage(""); setPhoto(null);
-    if (fileRef.current) fileRef.current.value = "";
+  const onSubmit = (e) => {
+    if (!message.trim() && !photo) {
+      e.preventDefault();
+      return setError("Add a message or a photo before sending.");
+    }
+    setError("");
+    handleSubmit(e);
   };
+
+  useEffect(() => {
+    if (!state.succeeded) return;
+    setEntries((prev) => [
+      { id: Date.now(), author: author.trim() || "A friend", message: message.trim(), photo },
+      ...prev,
+    ]);
+    setMessage("");
+    setAuthor("");
+    setPhoto(null);
+    if (fileRef.current) fileRef.current.value = "";
+    resetForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.succeeded]);
 
   const inputStyle = {
     fontFamily: "'Cormorant Garamond', serif",
@@ -666,11 +689,12 @@ function MemoryBox() {
 
   return (
     <div>
-      <div className="px-6 py-8 sm:px-10" style={{
+      <form onSubmit={onSubmit} className="px-6 py-8 sm:px-10" style={{
         backgroundColor: C.paper, border: `1px solid ${C.rose}`, borderRadius: 8,
         boxShadow: "0 12px 30px rgba(90,40,45,0.08)",
       }}>
         <input
+          name="name"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           placeholder="Your name (optional)"
@@ -679,6 +703,7 @@ function MemoryBox() {
           aria-label="Your name"
         />
         <textarea
+          name="message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Write a sweet message or a favorite memory with the couple…"
@@ -687,9 +712,10 @@ function MemoryBox() {
           style={inputStyle}
           aria-label="Your message"
         />
+        <ValidationError prefix="Message" field="message" errors={state.errors} />
 
         <div className="flex items-center gap-4 mt-4 flex-wrap">
-          <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" id="memory-photo" />
+          <input ref={fileRef} type="file" name="photo" accept="image/*" onChange={onFile} className="hidden" id="memory-photo" />
           <label htmlFor="memory-photo"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
@@ -709,7 +735,7 @@ function MemoryBox() {
             <div className="flex items-center gap-2">
               <img src={photo} alt="Preview of your upload" className="h-14 w-14 object-cover"
                 style={{ borderRadius: 6, border: `1px solid ${C.rose}` }} />
-              <button onClick={() => { setPhoto(null); if (fileRef.current) fileRef.current.value = ""; }}
+              <button type="button" onClick={() => { setPhoto(null); if (fileRef.current) fileRef.current.value = ""; }}
                 style={{
                   fontFamily: "'Cormorant Garamond', serif", fontSize: 13,
                   color: C.inkSoft, textDecoration: "underline",
@@ -721,19 +747,30 @@ function MemoryBox() {
           )}
         </div>
 
-        <button onClick={post} className="w-full mt-6"
+        {error && (
+          <p style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 15, color: C.wax, marginTop: 14,
+          }}>{error}</p>
+        )}
+        <ValidationError errors={state.errors} />
+
+        <button type="submit" disabled={state.submitting} className="w-full mt-6"
           style={{
             fontFamily: "'Cormorant Garamond', serif",
             letterSpacing: "0.28em", textTransform: "uppercase",
             fontSize: 13, fontWeight: 600,
             color: C.paper, backgroundColor: C.burgundy,
-            padding: "15px 0", borderRadius: 6, border: "none", cursor: "pointer",
+            padding: "15px 0", borderRadius: 6, border: "none",
+            cursor: state.submitting ? "default" : "pointer",
+            opacity: state.submitting ? 0.7 : 1,
+            transition: "background-color 0.25s ease, opacity 0.25s ease",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = C.waxDark)}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = C.burgundy)}>
-          Leave it in the memory box
+          {state.submitting ? "Sending…" : "Leave it in the memory box"}
         </button>
-      </div>
+      </form>
 
       {entries.length > 0 && (
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -805,6 +842,10 @@ export default function Invitation() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
         html { scroll-behavior: smooth; }
+        @keyframes scrollHintBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(7px); }
+        }
         ::selection { background: ${C.burgundy}; color: ${C.paper}; }
         input:focus-visible, textarea:focus-visible, button:focus-visible, label:focus-visible, a:focus-visible {
           outline: 2px solid ${C.burgundy}; outline-offset: 2px;
