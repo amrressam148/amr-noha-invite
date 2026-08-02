@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import sealImg from "./assets/seal.png";
 
 /* ————————————————————————————————————————————————
    Amr & Noha — Save the Date
@@ -127,37 +128,16 @@ const floralBg = {
 
 function WaxSeal({ size = 120, style = {} }) {
   return (
-    <svg viewBox="0 0 120 120" width={size} height={size} style={style} aria-hidden="true">
-      <defs>
-        <radialGradient id="waxg" cx="38%" cy="32%" r="75%">
-          <stop offset="0%" stopColor="#9A3B4A" />
-          <stop offset="55%" stopColor={C.wax} />
-          <stop offset="100%" stopColor={C.waxDark} />
-        </radialGradient>
-      </defs>
-      <path
-        d="M60 6c8 0 10 6 17 6s9-5 16-1 4 10 9 15 11 3 13 11-4 10-3 17 7 9 4 16-9 6-12 12 1 12-5 16-11-1-18 2-8 8-16 8-10-6-17-6-9 5-16 1-4-10-9-15-11-3-13-11 4-10 3-17-7-9-4-16 9-6 12-12-1-12 5-16 11 1 18-2 8-8 16-8z"
-        fill="url(#waxg)"
-      />
-      <circle cx="60" cy="60" r="38" fill="none" stroke="#4E1822" strokeOpacity="0.55" strokeWidth="2.5" />
-      <text
-        x="52" y="72"
-        fontFamily="'Cormorant Garamond', serif"
-        fontSize="42" fontWeight="600"
-        fill="#3F131C" opacity="0.85"
-        textAnchor="middle"
-      >A</text>
-      <text
-        x="72" y="80"
-        fontFamily="'Great Vibes', cursive"
-        fontSize="38"
-        fill="#3F131C" opacity="0.8"
-        textAnchor="middle"
-      >N</text>
-    </svg>
+    <img
+      src={sealImg}
+      alt=""
+      width={size}
+      height={size}
+      style={{ ...style, objectFit: "contain" }}
+      aria-hidden="true"
+    />
   );
 }
-
 function Flourish({ flip = false }) {
   return (
     <svg viewBox="0 0 220 24" width="180" height="20" aria-hidden="true"
@@ -232,12 +212,12 @@ function EnvelopeHero({ reduced }) {
                 boxShadow: "inset 0 0 0 6px #fff, inset 0 0 0 7px " + C.rose,
               }}>
               <p style={{
-                fontFamily: "'Great Vibes', cursive",
+                fontFamily: "'Sloop-ScriptThree', cursive",
                 fontSize: "clamp(24px, 6vw, 34px)",
                 color: C.ink, opacity: 0.85,
               }}>Save the date</p>
               <h1 style={{
-                fontFamily: "'Great Vibes', cursive",
+                fontFamily: "'Sloop-ScriptThree', cursive",
                 fontSize: "clamp(46px, 12vw, 74px)",
                 color: C.burgundy,
                 lineHeight: 1.1,
@@ -386,7 +366,7 @@ function Countdown() {
 
   if (!t) {
     return (
-      <p style={{ fontFamily: "'Great Vibes', cursive", fontSize: 36, color: C.burgundy }}>
+      <p style={{ fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 36, color: C.burgundy }}>
         The celebration has begun!
       </p>
     );
@@ -454,7 +434,7 @@ function Rsvp() {
         backgroundColor: C.paper, border: `1px solid ${C.rose}`, borderRadius: 8,
       }}>
         <WaxSeal size={64} style={{ margin: "0 auto 14px" }} />
-        <p style={{ fontFamily: "'Great Vibes', cursive", fontSize: 34, color: C.burgundy }}>
+        <p style={{ fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 34, color: C.burgundy }}>
           Thank you, {done.name}
         </p>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink, marginTop: 6 }}>
@@ -663,7 +643,7 @@ function MemoryBox() {
                 </p>
               )}
               <p style={{
-                fontFamily: "'Great Vibes', cursive", fontSize: 24,
+                fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 24,
                 color: C.burgundy, marginTop: 10,
               }}>— {en.author}</p>
             </div>
@@ -686,7 +666,7 @@ function Section({ eyebrow, title, children, alt = false }) {
         <Reveal className="text-center mb-10">
           <Label>{eyebrow}</Label>
           <h2 style={{
-            fontFamily: "'Great Vibes', cursive",
+            fontFamily: "'Sloop-ScriptThree', cursive",
             fontSize: "clamp(38px, 9vw, 54px)",
             color: C.burgundy, margin: "10px 0 14px",
           }}>{title}</h2>
@@ -790,7 +770,7 @@ export default function Invitation() {
       {/* footer */}
       <footer className="py-16 text-center" style={{ backgroundColor: C.burgundy }}>
         <WaxSeal size={72} style={{ margin: "0 auto 14px", filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.3))" }} />
-        <p style={{ fontFamily: "'Great Vibes', cursive", fontSize: 40, color: C.paper }}>
+        <p style={{ fontFamily: "'MySloop-ScriptThreeFont', cursive", fontSize: 40, color: C.paper }}>
           Amr &amp; Noha
         </p>
         <p style={{

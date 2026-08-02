@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "MySloop-ScriptThreeFont";
+  src: url("./assets/fonts/Sloop-ScriptThree.ttf") format("truetype");
+  font-display: swap;
+}
