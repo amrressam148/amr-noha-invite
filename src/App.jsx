@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useForm, ValidationError } from "@formspree/react";
 import sealImg from "./assets/seal.png";
 import venue1 from "./assets/videos/Venue_1.mp4";
 import venue2 from "./assets/videos/Venue_2.mp4";
@@ -503,14 +504,20 @@ function VenueReels() {
 function Rsvp() {
   const [name, setName] = useState("");
   const [attending, setAttending] = useState(null);
-  const [done, setDone] = useState(null);
   const [error, setError] = useState("");
+  const [state, handleSubmit, resetForm] = useForm("xpqvvzel");
 
-  const submit = () => {
-    if (!name.trim()) return setError("Please add your name so we know who's replying.");
-    if (attending === null) return setError("Let us know if you can make it.");
+  const onSubmit = (e) => {
+    if (!name.trim()) {
+      e.preventDefault();
+      return setError("Please add your name so we know who's replying.");
+    }
+    if (attending === null) {
+      e.preventDefault();
+      return setError("Let us know if you can make it.");
+    }
     setError("");
-    setDone({ name: name.trim(), attending });
+    handleSubmit(e);
   };
 
   const pill = (selected) => ({
@@ -525,21 +532,21 @@ function Rsvp() {
     transition: "all 0.25s ease",
   });
 
-  if (done) {
+  if (state.succeeded) {
     return (
       <div className="text-center px-6 py-10" style={{
         backgroundColor: C.paper, border: `1px solid ${C.rose}`, borderRadius: 8,
       }}>
         <WaxSeal size={64} style={{ margin: "0 auto 14px" }} />
         <p style={{ fontFamily: "'MySloop-ScriptThreeFont', cursive", fontSize: 34, color: C.burgundy }}>
-          Thank you, {done.name}
+          Thank you, {name.trim()}
         </p>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink, marginTop: 6 }}>
-          {done.attending
+          {attending
             ? "We can't wait to celebrate with you on August 7."
             : "You'll be missed — thank you for letting us know."}
         </p>
-        <button onClick={() => setDone(null)} className="mt-5"
+        <button onClick={resetForm} className="mt-5"
           style={{
             fontFamily: "'Cormorant Garamond', serif",
             letterSpacing: "0.2em", textTransform: "uppercase", fontSize: 12,
@@ -553,7 +560,7 @@ function Rsvp() {
   }
 
   return (
-    <div className="px-6 py-8 sm:px-10" style={{
+    <form onSubmit={onSubmit} className="px-6 py-8 sm:px-10" style={{
       backgroundColor: C.paper, border: `1px solid ${C.rose}`, borderRadius: 8,
       boxShadow: "0 12px 30px rgba(90,40,45,0.08)",
     }}>
@@ -564,6 +571,7 @@ function Rsvp() {
       }}>Your name</label>
       <input
         id="rsvp-name"
+        name="name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Full name"
@@ -577,6 +585,7 @@ function Rsvp() {
           borderRadius: 6,
         }}
       />
+      <ValidationError prefix="Name" field="name" errors={state.errors} />
 
       <p style={{
         fontFamily: "'Cormorant Garamond', serif",
@@ -584,15 +593,16 @@ function Rsvp() {
         fontSize: 12, color: C.inkSoft, margin: "22px 0 10px",
       }}>Are you attending?</p>
       <div className="flex gap-3 flex-wrap" role="radiogroup" aria-label="Are you attending?">
-        <button role="radio" aria-checked={attending === true}
+        <button type="button" role="radio" aria-checked={attending === true}
           style={pill(attending === true)} onClick={() => setAttending(true)}>
           Yes, I'll be there
         </button>
-        <button role="radio" aria-checked={attending === false}
+        <button type="button" role="radio" aria-checked={attending === false}
           style={pill(attending === false)} onClick={() => setAttending(false)}>
           No, I'm sorry
         </button>
       </div>
+      <input type="hidden" name="attending" value={attending === true ? "Yes" : attending === false ? "No" : ""} />
 
       {error && (
         <p style={{
@@ -600,21 +610,24 @@ function Rsvp() {
           fontSize: 15, color: C.wax, marginTop: 14,
         }}>{error}</p>
       )}
+      <ValidationError errors={state.errors} />
 
-      <button onClick={submit} className="w-full mt-7"
+      <button type="submit" disabled={state.submitting} className="w-full mt-7"
         style={{
           fontFamily: "'Cormorant Garamond', serif",
           letterSpacing: "0.28em", textTransform: "uppercase",
           fontSize: 13, fontWeight: 600,
           color: C.paper, backgroundColor: C.burgundy,
-          padding: "15px 0", borderRadius: 6, border: "none", cursor: "pointer",
-          transition: "background-color 0.25s ease",
+          padding: "15px 0", borderRadius: 6, border: "none",
+          cursor: state.submitting ? "default" : "pointer",
+          opacity: state.submitting ? 0.7 : 1,
+          transition: "background-color 0.25s ease, opacity 0.25s ease",
         }}
         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = C.waxDark)}
         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = C.burgundy)}>
-        Send reply
+        {state.submitting ? "Sending…" : "Send reply"}
       </button>
-    </div>
+    </form>
   );
 }
 
