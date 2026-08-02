@@ -74,7 +74,10 @@ function useScrollProgress(ref, reduced) {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      if (raf.current) cancelAnimationFrame(raf.current);
+      if (raf.current) {
+        cancelAnimationFrame(raf.current);
+        raf.current = null;
+      }
     };
   }, [ref, tick]);
 
@@ -326,6 +329,33 @@ function EnvelopeHero({ reduced }) {
             filter: "drop-shadow(0 6px 10px rgba(60,15,25,0.35))",
           }}>
             <WaxSeal size={Math.min(120, window.innerWidth * 0.26)} />
+          </div>
+
+          {/* outer invitation line — printed on the envelope face, fades with the seal as it opens */}
+          <div style={{
+            position: "absolute", left: "50%", top: "76%",
+            transform: `translate(-50%, -50%) translateY(${envDrop * 26}%)`,
+            opacity: sealFade,
+            zIndex: 4,
+            pointerEvents: "none",
+            width: "78%",
+            textAlign: "center",
+          }}>
+            <p style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              fontSize: "clamp(11px, 2.6vw, 13px)",
+              color: C.burgundy,
+              opacity: 0.8,
+            }}>You are warmly invited to our</p>
+            <p style={{
+              fontFamily: "'MySloop-ScriptThreeFont', cursive",
+              fontSize: "clamp(24px, 6.5vw, 34px)",
+              color: C.burgundy,
+              lineHeight: 1.15,
+              marginTop: 4,
+            }}>Engagement Outing</p>
           </div>
         </div>
 
