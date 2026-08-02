@@ -35,6 +35,7 @@ const MAPS_URL =
 /* ---------- helpers ---------- */
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 /* Scroll progress (0→1) across a tall hero track, with a gentle spring */
 function useScrollProgress(ref, reduced) {
@@ -46,7 +47,7 @@ function useScrollProgress(ref, reduced) {
   const tick = useCallback(() => {
     const t = target.current;
     const c = current.current;
-    const next = reduced ? t : c + (t - c) * 0.12; // spring toward target
+    const next = reduced ? t : c + (t - c) * 0.09; // spring toward target
     current.current = Math.abs(next - t) < 0.0005 ? t : next;
     setP(current.current);
     if (current.current !== t) raf.current = requestAnimationFrame(tick);
@@ -170,9 +171,9 @@ function EnvelopeHero({ reduced }) {
   const p = useScrollProgress(trackRef, reduced);
 
   /* animation timeline */
-  const flapT = clamp(p / 0.42, 0, 1);                 // flap opens
+  const flapT = easeInOutCubic(clamp(p / 0.42, 0, 1)); // flap opens
   const flapAngle = flapT * -180;
-  const sealFade = clamp(1 - p / 0.22, 0, 1);
+  const sealFade = easeInOutCubic(clamp(1 - p / 0.22, 0, 1));
   const cardT = clamp((p - 0.34) / 0.5, 0, 1);         // card rises
   const cardEase = 1 - Math.pow(1 - cardT, 3);
   const cardY = 46 - cardEase * 118;                    // % of envelope height
@@ -212,33 +213,23 @@ function EnvelopeHero({ reduced }) {
                 boxShadow: "inset 0 0 0 6px #fff, inset 0 0 0 7px " + C.rose,
               }}>
               <p style={{
-                fontFamily: "'Sloop-ScriptThree', cursive",
+                fontFamily: "'MySloop-ScriptThreeFont', cursive",
                 fontSize: "clamp(24px, 6vw, 34px)",
                 color: C.ink, opacity: 0.85,
               }}>Save the date</p>
               <h1 style={{
-                fontFamily: "'Sloop-ScriptThree', cursive",
+                fontFamily: "'MySloop-ScriptThreeFont', cursive",
                 fontSize: "clamp(46px, 12vw, 74px)",
                 color: C.burgundy,
                 lineHeight: 1.1,
-                margin: "6px 0 10px",
+                margin: "10px 0 18px",
               }}>Amr &amp; Noha</h1>
-              <Flourish />
               <p style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: "clamp(18px, 4.5vw, 24px)",
                 color: C.ink,
-                marginTop: 12,
                 letterSpacing: "0.06em",
-              }}>Friday, August 7, 2026</p>
-              <p style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                letterSpacing: "0.3em",
-                textTransform: "uppercase",
-                fontSize: 13,
-                color: C.inkSoft,
-                marginTop: 6,
-              }}>At 9:00 PM · Cairo</p>
+              }}>Friday, August 7</p>
             </div>
           </div>
 
@@ -366,7 +357,7 @@ function Countdown() {
 
   if (!t) {
     return (
-      <p style={{ fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 36, color: C.burgundy }}>
+      <p style={{ fontFamily: "'MySloop-ScriptThreeFont', cursive", fontSize: 36, color: C.burgundy }}>
         The celebration has begun!
       </p>
     );
@@ -434,7 +425,7 @@ function Rsvp() {
         backgroundColor: C.paper, border: `1px solid ${C.rose}`, borderRadius: 8,
       }}>
         <WaxSeal size={64} style={{ margin: "0 auto 14px" }} />
-        <p style={{ fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 34, color: C.burgundy }}>
+        <p style={{ fontFamily: "'MySloop-ScriptThreeFont', cursive", fontSize: 34, color: C.burgundy }}>
           Thank you, {done.name}
         </p>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink, marginTop: 6 }}>
@@ -643,7 +634,7 @@ function MemoryBox() {
                 </p>
               )}
               <p style={{
-                fontFamily: "'Sloop-ScriptThree', cursive", fontSize: 24,
+                fontFamily: "'MySloop-ScriptThreeFont', cursive", fontSize: 24,
                 color: C.burgundy, marginTop: 10,
               }}>— {en.author}</p>
             </div>
@@ -666,7 +657,7 @@ function Section({ eyebrow, title, children, alt = false }) {
         <Reveal className="text-center mb-10">
           <Label>{eyebrow}</Label>
           <h2 style={{
-            fontFamily: "'Sloop-ScriptThree', cursive",
+            fontFamily: "'MySloop-ScriptThreeFont', cursive",
             fontSize: "clamp(38px, 9vw, 54px)",
             color: C.burgundy, margin: "10px 0 14px",
           }}>{title}</h2>
