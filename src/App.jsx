@@ -61,6 +61,7 @@ function useScrollProgress(ref, reduced) {
       const rect = el.getBoundingClientRect();
       const total = el.offsetHeight - window.innerHeight;
       target.current = clamp(-rect.top / Math.max(total, 1), 0, 1);
+      console.log("DEBUG onScroll", { rectTop: rect.top, total, target: target.current });
       if (!raf.current) raf.current = requestAnimationFrame(tick);
     };
     onScroll();
@@ -233,52 +234,60 @@ function EnvelopeHero({ reduced }) {
             </div>
           </div>
 
-          {/* envelope body */}
+          {/* envelope back (behind the card) */}
           <div style={{
-            position: "absolute", inset: 0,
+            position: "absolute", left: 0, right: 0, top: "18%", bottom: 0,
+            transform: `translateY(${envDrop * 26}%)`,
+            opacity: 1 - envDrop * 0.35,
+            zIndex: 1,
+            pointerEvents: "none",
+            backgroundColor: C.blush, ...floralBg,
+            borderRadius: 8,
+            boxShadow: "0 30px 60px rgba(90,40,45,0.22)",
+          }} />
+
+          {/* side folds + bottom pocket lip (in front of the card, so it slides out from behind) */}
+          <div style={{
+            position: "absolute", left: 0, right: 0, top: "18%", bottom: 0,
             transform: `translateY(${envDrop * 26}%)`,
             opacity: 1 - envDrop * 0.35,
             zIndex: 3,
             pointerEvents: "none",
+            borderRadius: 8, overflow: "hidden",
           }}>
-            {/* back of envelope */}
             <div style={{
-              position: "absolute", left: 0, right: 0, top: "18%", bottom: 0,
-              backgroundColor: C.blush, ...floralBg,
-              borderRadius: 8,
-              boxShadow: "0 30px 60px rgba(90,40,45,0.22)",
-              zIndex: 1,
+              position: "absolute", inset: 0,
+              background: `linear-gradient(105deg, ${C.roseSoft} 0%, ${C.blush} 30%, transparent 30.5%),
+                           linear-gradient(-105deg, ${C.roseSoft} 0%, ${C.blush} 30%, transparent 30.5%)`,
             }} />
-            {/* side folds */}
+            {/* bottom pocket */}
             <div style={{
-              position: "absolute", left: 0, right: 0, top: "18%", bottom: 0,
-              borderRadius: 8, overflow: "hidden", zIndex: 3,
-            }}>
-              <div style={{
-                position: "absolute", inset: 0,
-                background: `linear-gradient(105deg, ${C.roseSoft} 0%, ${C.blush} 30%, transparent 30.5%),
-                             linear-gradient(-105deg, ${C.roseSoft} 0%, ${C.blush} 30%, transparent 30.5%)`,
-              }} />
-              {/* bottom pocket */}
-              <div style={{
-                position: "absolute", inset: 0,
-                clipPath: "polygon(0 100%, 100% 100%, 100% 34%, 50% 78%, 0 34%)",
-                backgroundColor: C.blush, ...floralBg,
-                boxShadow: "0 -6px 18px rgba(90,40,45,0.10)",
-              }} />
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none"
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-                <path d="M0 34 L50 78 L100 34" fill="none" stroke={C.rose} strokeWidth="0.7" />
-              </svg>
-            </div>
+              position: "absolute", inset: 0,
+              clipPath: "polygon(0 100%, 100% 100%, 100% 34%, 50% 78%, 0 34%)",
+              backgroundColor: C.blush, ...floralBg,
+              boxShadow: "0 -6px 18px rgba(90,40,45,0.10)",
+            }} />
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+              <path d="M0 34 L50 78 L100 34" fill="none" stroke={C.rose} strokeWidth="0.7" />
+            </svg>
+          </div>
 
-            {/* flap */}
+          {/* flap — in front while closing, swings behind the card once past halfway open */}
+          <div style={{
+            position: "absolute", left: 0, right: 0, top: "18%", height: "46%",
+            transform: `translateY(${envDrop * 26}%)`,
+            opacity: 1 - envDrop * 0.35,
+            zIndex: flapT > 0.5 ? 1 : 4,
+            pointerEvents: "none",
+            transformOrigin: "top center",
+            perspective: "1400px",
+          }}>
             <div style={{
-              position: "absolute", left: 0, right: 0, top: "18%", height: "46%",
+              width: "100%", height: "100%",
               transformOrigin: "top center",
               transform: `rotateX(${flapAngle}deg)`,
               transformStyle: "preserve-3d",
-              zIndex: flapT > 0.5 ? 0 : 4,
               transition: reduced ? "transform 0.3s ease" : "none",
             }}>
               {/* flap front */}
@@ -300,17 +309,18 @@ function EnvelopeHero({ reduced }) {
                 borderRadius: "8px 8px 0 0",
               }} />
             </div>
+          </div>
 
-            {/* wax seal */}
-            <div style={{
-              position: "absolute", left: "50%", top: "56%",
-              transform: `translate(-50%, -50%) scale(${0.9 + sealFade * 0.1})`,
-              opacity: sealFade,
-              zIndex: 5,
-              filter: "drop-shadow(0 6px 10px rgba(60,15,25,0.35))",
-            }}>
-              <WaxSeal size={Math.min(120, window.innerWidth * 0.26)} />
-            </div>
+          {/* wax seal (always in front, fades early) */}
+          <div style={{
+            position: "absolute", left: "50%", top: "56%",
+            transform: `translate(-50%, -50%) translateY(${envDrop * 26}%) scale(${0.9 + sealFade * 0.1})`,
+            opacity: sealFade,
+            zIndex: 5,
+            pointerEvents: "none",
+            filter: "drop-shadow(0 6px 10px rgba(60,15,25,0.35))",
+          }}>
+            <WaxSeal size={Math.min(120, window.innerWidth * 0.26)} />
           </div>
         </div>
 
