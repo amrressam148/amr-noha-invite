@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import sealImg from "./assets/seal.png";
+import venue1 from "./assets/videos/Venue_1.mp4";
+import venue2 from "./assets/videos/Venue_2.mp4";
+import venue3 from "./assets/videos/Venue_3.mp4";
+import venue4 from "./assets/videos/Venue_4.mp4";
 
 /* ————————————————————————————————————————————————
    Amr & Noha — Save the Date
@@ -61,7 +66,6 @@ function useScrollProgress(ref, reduced) {
       const rect = el.getBoundingClientRect();
       const total = el.offsetHeight - window.innerHeight;
       target.current = clamp(-rect.top / Math.max(total, 1), 0, 1);
-      console.log("DEBUG onScroll", { rectTop: rect.top, total, target: target.current });
       if (!raf.current) raf.current = requestAnimationFrame(tick);
     };
     onScroll();
@@ -198,12 +202,13 @@ function EnvelopeHero({ reduced }) {
           perspective: "1400px",
         }}>
 
-          {/* the card inside */}
+          {/* the card inside — always frontmost, fades in as it rises so it never peeks through the closed envelope */}
           <div style={{
             position: "absolute",
             left: "6%", right: "6%", top: 0, height: "88%",
             transform: `translateY(${cardY}%) scale(${cardScale})`,
-            zIndex: 2,
+            opacity: cardEase,
+            zIndex: 5,
             filter: "drop-shadow(0 18px 30px rgba(90,40,45,0.18))",
           }}>
             <div className="w-full h-full flex flex-col items-center justify-center text-center px-6"
@@ -246,12 +251,12 @@ function EnvelopeHero({ reduced }) {
             boxShadow: "0 30px 60px rgba(90,40,45,0.22)",
           }} />
 
-          {/* side folds + bottom pocket lip (in front of the card, so it slides out from behind) */}
+          {/* side folds + bottom pocket lip */}
           <div style={{
             position: "absolute", left: 0, right: 0, top: "18%", bottom: 0,
             transform: `translateY(${envDrop * 26}%)`,
             opacity: 1 - envDrop * 0.35,
-            zIndex: 3,
+            zIndex: 2,
             pointerEvents: "none",
             borderRadius: 8, overflow: "hidden",
           }}>
@@ -273,12 +278,12 @@ function EnvelopeHero({ reduced }) {
             </svg>
           </div>
 
-          {/* flap — in front while closing, swings behind the card once past halfway open */}
+          {/* flap — always behind the card; the card fading in as it rises keeps it from ever peeking through */}
           <div style={{
             position: "absolute", left: 0, right: 0, top: "18%", height: "46%",
             transform: `translateY(${envDrop * 26}%)`,
             opacity: 1 - envDrop * 0.35,
-            zIndex: flapT > 0.5 ? 1 : 4,
+            zIndex: 3,
             pointerEvents: "none",
             transformOrigin: "top center",
             perspective: "1400px",
@@ -311,12 +316,12 @@ function EnvelopeHero({ reduced }) {
             </div>
           </div>
 
-          {/* wax seal (always in front, fades early) */}
+          {/* wax seal — in front of the envelope, fades out early before the card ever appears */}
           <div style={{
             position: "absolute", left: "50%", top: "56%",
             transform: `translate(-50%, -50%) translateY(${envDrop * 26}%) scale(${0.9 + sealFade * 0.1})`,
             opacity: sealFade,
-            zIndex: 5,
+            zIndex: 4,
             pointerEvents: "none",
             filter: "drop-shadow(0 6px 10px rgba(60,15,25,0.35))",
           }}>
@@ -398,6 +403,67 @@ function Countdown() {
           }}>{label}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ---------- venue reels ---------- */
+
+function VenueReels() {
+  const videos = [venue1, venue2, venue3, venue4];
+  return (
+    <div className="-mx-5 sm:-mx-8">
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar px-5 sm:px-8 pb-3">
+        {videos.map((src, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.8, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className="relative shrink-0 snap-center overflow-hidden"
+            style={{
+              width: "min(66vw, 250px)",
+              aspectRatio: "9 / 16",
+              borderRadius: 14,
+              border: `1px solid ${C.rose}`,
+              backgroundColor: C.roseSoft,
+              boxShadow: "0 16px 34px rgba(90,40,45,0.16)",
+            }}
+          >
+            <video
+              src={src}
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(59,26,32,0) 60%, rgba(59,26,32,0.38) 100%)",
+                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.28)",
+                borderRadius: 14,
+              }}
+            />
+            <p
+              className="absolute bottom-3 left-0 right-0 text-center pointer-events-none"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                letterSpacing: "0.28em",
+                textTransform: "uppercase",
+                fontSize: 11,
+                color: "#F6EDE8",
+              }}
+            >
+              Kanzel
+            </p>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -747,8 +813,13 @@ export default function Invitation() {
         </p>
       </Section>
 
+      {/* venue reels */}
+      <Section eyebrow="The venue" title="A glimpse of Kanzel" alt>
+        <VenueReels />
+      </Section>
+
       {/* countdown */}
-      <Section eyebrow="Counting down" title="Until we celebrate" alt>
+      <Section eyebrow="Counting down" title="Until we celebrate">
         <Countdown />
       </Section>
 
